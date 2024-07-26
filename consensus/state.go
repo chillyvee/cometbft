@@ -2382,15 +2382,18 @@ func (cs *State) signVote(
 	}
 
 	extEnabled := cs.state.ConsensusParams.ABCI.VoteExtensionsEnabled(vote.Height)
-	if msgType == cmtproto.PrecommitType && !vote.BlockID.IsZero() {
-		// if the signedMessage type is for a non-nil precommit, add
-		// VoteExtension
-		if extEnabled {
+	if extEnabled && msgType == cmtproto.PrecommitType {
+		if !vote.BlockID.IsZero() {
+			// if the signedMessage type is for a non-nil precommit, add
+			// VoteExtension
 			ext, err := cs.blockExec.ExtendVote(context.TODO(), vote, block, cs.state)
 			if err != nil {
 				return nil, err
 			}
 			vote.Extension = ext
+		} else {
+			// Disable VoteExtension for nil precommit
+			extEnabled = false
 		}
 	}
 
