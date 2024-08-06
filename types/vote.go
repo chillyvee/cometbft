@@ -211,7 +211,8 @@ func (vote *Vote) String() string {
 		typeString,
 		cmtbytes.Fingerprint(vote.BlockID.Hash),
 		cmtbytes.Fingerprint(vote.Signature),
-		cmtbytes.Fingerprint(vote.Extension),
+		//cmtbytes.Fingerprint(vote.Extension),
+		vote.Extension,
 		CanonicalTime(vote.Timestamp),
 	)
 }
@@ -428,15 +429,15 @@ func SignAndCheckVote(
 		return false, &ErrVoteExtensionInvalid{ExtSignature: v.ExtensionSignature}
 	}
 
-	isNil := vote.BlockID.IsZero()
-	extSignature := (len(v.ExtensionSignature) > 0)
-	if extSignature == (!isPrecommit || isNil) {
-		// Non-recoverable because the vote is malformed
-		return false, &ErrVoteExtensionInvalid{ExtSignature: v.ExtensionSignature}
-	}
-
 	vote.ExtensionSignature = nil
 	if extensionsEnabled {
+		isNil := vote.BlockID.IsZero()
+		extSignature := (len(v.ExtensionSignature) > 0)
+		if extSignature == (!isPrecommit || isNil) {
+			// Non-recoverable because the vote is malformed
+			return false, &ErrVoteExtensionInvalid{ExtSignature: v.ExtensionSignature}
+		}
+
 		vote.ExtensionSignature = v.ExtensionSignature
 	}
 
